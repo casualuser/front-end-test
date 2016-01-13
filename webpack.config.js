@@ -1,12 +1,13 @@
 const webpack = require('webpack');
 
-console.log('PORT', process.env.SERVER_PORT);
-
 module.exports = {
-    entry: './question1/src/client/index.js',
+    entry: {
+        q1: './src/client/entry1.js',
+        q2: './src/client/entry2.js'
+    },
     output: {
-        path: './question1/dist',
-        filename: 'client.js'
+        path: './public',
+        filename: '[name].js'
     },
     plugins: [
        new webpack.DefinePlugin({
