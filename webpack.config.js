@@ -6,7 +6,7 @@ module.exports = {
         q2: './src/client/entry2.js'
     },
     output: {
-        path: './public',
+        path: './dist',
         filename: '[name].js'
     },
     plugins: [
