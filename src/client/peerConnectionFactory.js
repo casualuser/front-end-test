@@ -2,14 +2,13 @@ import {sourceId} from './sourceId';
 import peerConnections from './peerConnections';
 import peerChannels from './peerChannels';
 import messageHandler from './messageHandler';
-import {signalingChannel} from './signalingChannel';
-import {ICE_CANDIDATE, OFFER} from '../messages';
+import {ICE_CANDIDATE, OFFER, PEERS_LIST} from '../messages';
 import {RTCPeerConnection, RTCSessionDescription} from './rtcApi';
 import {addPeer, removePeer} from './dom';
 
 const iceServers = {iceServers: [{urls: 'stun:stun.1.google.com:19302'}]};
 
-export const createPeerConnectionFromOffer = (source, offer) => {
+export const createPeerConnectionFromOffer = (source, offer, usePeerAsSignalingRelay = false, signalingChannel) => {
     const peerConnection = new RTCPeerConnection(iceServers, {
         optional: [{
             DtlsSrtpKeyAgreement: true
@@ -20,15 +19,26 @@ export const createPeerConnectionFromOffer = (source, offer) => {
 
     peerConnection.onicecandidate = ({candidate}) => {
         if (candidate) {
-            onNewIceCandidate(source, candidate);
+            onNewIceCandidate(source, candidate, signalingChannel);
         }
     };
 
     peerConnection.ondatachannel = ({channel}) => {
         peerChannels[source] = channel;
         addPeer(source);
+        if (usePeerAsSignalingRelay) {
+            channel.onopen = () => {
+                const peersList = Object.keys(peerConnections).filter(peerId => (peerId !== sourceId && peerId !== source));
+                channel.send(JSON.stringify({
+                    type: PEERS_LIST,
+                    destination: source,
+                    source: sourceId,
+                    [PEERS_LIST]: peersList
+                }));
+            }
+        }
         channel.onmessage = ({data}) => {
-            messageHandler(JSON.parse(data));
+            messageHandler(JSON.parse(data), channel);
         };
         channel.onclose = () => cleanPeerDisconnection(source);
         console.log(`Received communication channel from ${source}`);
@@ -39,7 +49,7 @@ export const createPeerConnectionFromOffer = (source, offer) => {
     return peerConnection;
 }
 
-export const createPeerConnectionFromNothing = destination => {
+export const createPeerConnectionFromNothing = (destination, usePeerAsSignalingRelay = false, signalingChannel) => {
     const peerConnection = new RTCPeerConnection(iceServers, {
         optional: [{
             DtlsSrtpKeyAgreement: true
@@ -53,7 +63,7 @@ export const createPeerConnectionFromNothing = destination => {
     peerConnections[destination] = peerConnection;
 
     channel.onmessage = ({data}) => {
-        messageHandler(JSON.parse(data));
+        messageHandler(JSON.parse(data), signalingChannel);
     };
 
     channel.onopen = () => {
@@ -70,19 +80,20 @@ export const createPeerConnectionFromNothing = destination => {
             type: OFFER,
             source: sourceId,
             destination,
-            [OFFER]: offer
+            [OFFER]: offer,
+            usePeerAsSignalingRelay
         }));
-        console.log(`Sent offer to ${destination}`);
+        console.log(`Sent offer to ${destination}${usePeerAsSignalingRelay ? ', asked it to be my future signaling channel' : ''}`);
     }, console.error.bind(console));
 
     peerConnection.onicecandidate = ({candidate}) => {
         if (candidate) {
-            onNewIceCandidate(destination, candidate);
+            onNewIceCandidate(destination, candidate, signalingChannel);
         }
     };
 }
 
-const onNewIceCandidate = (destination, candidate) => {
+const onNewIceCandidate = (destination, candidate, signalingChannel) => {
     signalingChannel.send(JSON.stringify({
         type: ICE_CANDIDATE,
         source: sourceId,
