@@ -2,7 +2,7 @@
 import {Server as WebSocketServer} from 'ws';
 
 // Enums
-import {INIT, ICE_CANDIDATE, OFFER, ANSWER, PEERS_LIST} from '../messages';
+import {INIT, ICE_CANDIDATE, OFFER, ANSWER, PEERS_LIST, RANDOM_PEER} from '../messages';
 
 // Config
 const {SERVER_PORT} = process.env;
@@ -38,20 +38,31 @@ const messageHandler = (webSocket, message) => {
 
 // Init handler
 const initHandler = (webSocket, message) => {
-    const {source} = message;
+    const {source, question} = message;
     console.log(`Init from peer ${source}`);
     webSocket.id = source;
 
-    // Send all the connected peers ids (question 1)
     const peersList = [];
     for (let peerId of connectedPeersWebSockets.keys()) {
         peersList.push(peerId);
     }
-    webSocket.send(JSON.stringify({
-        type: PEERS_LIST,
-        destination: source,
-        [PEERS_LIST]: peersList
-    }));
+
+    if (question === 1) {
+        // Question 1 : send all the connected peers list
+        webSocket.send(JSON.stringify({
+            type: PEERS_LIST,
+            destination: source,
+            [PEERS_LIST]: peersList
+        }));
+    } else {
+        // Question 2 : send a random connected peer
+        webSocket.send(JSON.stringify({
+            type: RANDOM_PEER,
+            destination: source,
+            [RANDOM_PEER]: peersList[Math.floor(Math.random() * peersList.length)]
+        }));
+    }
+
     connectedPeersWebSockets.set(source, webSocket);
 }
 
