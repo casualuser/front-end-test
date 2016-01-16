@@ -1,4 +1,3 @@
-import signalingChannelContainer from './signalingChannel';
 import {sourceId} from './sourceId';
 import peerChannels from './peerChannels';
 import {INIT} from '../messages';
@@ -14,15 +13,15 @@ document.onreadystatechange = () => {
         registerDomListeners();
         const webSocket = new WebSocket(webSockerURI);
         webSocket.onopen = () => {
-            signalingChannelContainer.signalingChannel = webSocket;
             webSocket.send(JSON.stringify({
                 type: INIT,
-                source: sourceId
+                source: sourceId,
+                question: 1
             }));
         };
         webSocket.onmessage = ({data}) => {
             const message = JSON.parse(data);
-            messageHandler(message);
+            messageHandler(message, webSocket);
         }
 
         window.onbeforeunload = () => {
