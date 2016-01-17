@@ -1,21 +1,22 @@
-# Application test
+# WebRTC assignment
 
-## Introduction
+## Installation
 
-The goal of this test is to create a peer to peer application to send binary data from on browser tab to another, using the RTCDataChannel of the WebRTC HTML5 API.
+```bash
+npm run i
+```
 
-Web RTC is an API that allows direct browser-to-browser communication. It's widely used for video chats, but it can be used for many things, including peer-to-peer video delivery like we do at Streamroot.
+## Usage
 
-## What's in this repository
+```bash
+npm run start
+```
 
-- The instructions you have to follow to complete the test: [INSTRUCTIONS.md](INSTRUCTIONS.md)
-- An in-depth explanation of WebRTC : [webRTC.md](webRTC.md)
-- A minimalist working webRTC example. You can reuse it or get inspired by it: [EXAMPLE.md](EXAMPLE.md)
+Then you can browse to [question 1](http://localhost:8089/question1) and [question 2](http://localhost:8089/question2)
+
+**Warning** please restart the signaling server when switching from question 1 to question 2, so that it cleans up its peers memory.
 
 ## Prerequisites:
 
 - Local instal of nodejs v4.2+
 - Local modern browser: Mozilla Firefox 42+ or Google Chrome 46+
-
-
-
