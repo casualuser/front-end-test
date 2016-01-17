@@ -5,3 +5,4 @@ export const ANSWER = 'ANSWER';
 export const PEERS_LIST = 'PEERS_LIST';
 export const CHAT = 'CHAT';
 export const RANDOM_PEER = 'RANDOM_PEER';
+export const PEER_DISCONNECTION = 'PEER_DISCONNECTION';

@@ -2,7 +2,7 @@
 import {Server as WebSocketServer} from 'ws';
 
 // Enums
-import {INIT, ICE_CANDIDATE, OFFER, ANSWER, PEERS_LIST, RANDOM_PEER} from '../messages';
+import {INIT, ICE_CANDIDATE, OFFER, ANSWER, PEERS_LIST, RANDOM_PEER, PEER_DISCONNECTION} from '../messages';
 
 // Config
 const {SERVER_PORT} = process.env;
@@ -20,6 +20,12 @@ webSocketServer.on('connection', webSocket => {
     webSocket.on('close',() => {
         console.log(`Client disconnected ${webSocket.id}`);
         connectedPeersWebSockets.delete(webSocket.id);
+        for (let [peerId, socket] of connectedPeersWebSockets) {
+            socket.send(JSON.stringify({
+                type: PEER_DISCONNECTION,
+                [PEER_DISCONNECTION]: webSocket.id
+            }));
+        }
     });
 });
 
@@ -70,18 +76,6 @@ const transitHandler = message => {
     console.log(`Transiting message from source ${message.source} to destination ${message.destination}, of type ${message.type}`);
     const destinationWebSocket = connectedPeersWebSockets.get(message.destination);
     destinationWebSocket.send(JSON.stringify(message));
-}
-
-const iceCandidateHandler = ({id: source}, message) => {
-    const ICECandidate = message[ICE_CANDIDATE];
-    const {destination} = message;
-    console.log(`ICE Candidate from peer ${source} to peer ${destination}`);
-    const destinationWebSocket = connectedPeersWebSockets.get(destination);
-    destinationWebSocket.send(JSON.stringify({
-        type: ICE_CANDIDATE,
-        ICECandidate,
-        source
-    }));
 }
 
 console.log(`WebSocket server started on port ${SERVER_PORT}`);

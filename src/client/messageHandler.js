@@ -1,16 +1,21 @@
 import {sourceId} from './sourceId';
 import peerChannels from './peerChannels';
 import peerConnections from './peerConnections';
-import {createPeerConnectionFromNothing, createPeerConnectionFromOffer} from './peerConnectionFactory';
-import {INIT, ICE_CANDIDATE, OFFER, ANSWER, PEERS_LIST, CHAT, RANDOM_PEER} from '../messages';
+import {createPeerConnectionFromNothing, createPeerConnectionFromOffer, cleanPeerDisconnection} from './peerConnectionFactory';
+import {INIT, ICE_CANDIDATE, OFFER, ANSWER, PEERS_LIST, CHAT, RANDOM_PEER, PEER_DISCONNECTION} from '../messages';
 import {RTCIceCandidate, RTCSessionDescription} from './rtcApi';
 import {addChatMessage} from './dom';
 
 const relayMessage = (message, channel) => {
-    peerChannels[message.destination].send(JSON.stringify(message));
-    console.groupCollapsed(`Relayed message of type ${message.type} from %c${message.source} to %c${message.destination}`, `color: #${message.source.substr(0, 6)}`, `color: #${message.destination.substr(0, 6)}`);
-    console.log('Channel : ', channel);
-    console.groupEnd();
+    const relayedChannel = peerChannels[message.destination];
+    if (relayedChannel) {
+        relayedChannel.send(JSON.stringify(message));
+        console.groupCollapsed(`Relayed message of type ${message.type} from %c${message.source} to %c${message.destination}`, `color: #${message.source.substr(0, 6)}`, `color: #${message.destination.substr(0, 6)}`);
+        console.log('Channel : ', channel);
+        console.groupEnd();
+    } else {
+        console.error(`Tried to relay to ${message.destination} but no channel found for it.`);
+    }
 }
 
 const onPeersList = (message, signalingChannel) => {
@@ -81,6 +86,10 @@ const onRandomPeer = (message, signalingChannel) => {
     console.groupEnd();
 }
 
+const onPeerDisconnection = (message, channel) => {
+    cleanPeerDisconnection(message[PEER_DISCONNECTION]);
+}
+
 const messageHandler = (message, signalingChannel) => {
     if (message.destination === sourceId) {
         switch (message.type) {
@@ -102,6 +111,8 @@ const messageHandler = (message, signalingChannel) => {
             case RANDOM_PEER:
                 onRandomPeer(message, signalingChannel);
                 break;
+            case PEER_DISCONNECTION:
+                onPeerDisconnection(message, signalingChannel);
         }
     } else {
         relayMessage(message, signalingChannel);

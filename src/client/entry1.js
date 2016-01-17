@@ -29,4 +29,4 @@ document.addEventListener('DOMContentLoaded', () => {
             peerChannels[peerId].close();
         });
     }
-}
+});
