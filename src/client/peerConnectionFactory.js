@@ -28,20 +28,26 @@ export const createPeerConnectionFromOffer = (source, offer, usePeerAsSignalingR
         addPeer(source);
         if (usePeerAsSignalingRelay) {
             channel.onopen = () => {
-                const peersList = Object.keys(peerConnections).filter(peerId => (peerId !== sourceId && peerId !== source));
+                const peersList = Object.keys(peerChannels).filter(peerId => (peerId !== sourceId && peerId !== source));
                 channel.send(JSON.stringify({
                     type: PEERS_LIST,
                     destination: source,
                     source: sourceId,
                     [PEERS_LIST]: peersList
                 }));
+                console.groupCollapsed(`Sent peers list to %c${source}`, `color: #${source.substr(0, 6)}`);
+                console.log('Peers list : ', peersList);
+                console.log('Channel : ', channel);
+                console.groupEnd();
             }
         }
         channel.onmessage = ({data}) => {
             messageHandler(JSON.parse(data), channel);
         };
         channel.onclose = () => cleanPeerDisconnection(source);
-        console.log(`Received communication channel from ${source}`);
+        console.groupCollapsed(`Received communication channel from %c${source}`, `color: #${source.substr(0, 6)}`);
+        console.log('Channel : ', channel);
+        console.groupEnd();
     };
 
     peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -63,13 +69,15 @@ export const createPeerConnectionFromNothing = (destination, usePeerAsSignalingR
     peerConnections[destination] = peerConnection;
 
     channel.onmessage = ({data}) => {
-        messageHandler(JSON.parse(data), signalingChannel);
+        messageHandler(JSON.parse(data), channel);
     };
 
     channel.onopen = () => {
         peerChannels[destination] = channel;
         addPeer(destination);
-        console.log(`Created communication channel with ${destination}`);
+        console.groupCollapsed(`Created communication channel with %c${destination}`, `color: #${destination.substr(0, 6)}`);
+        console.log('Channel : ', channel);
+        console.groupEnd();
     };
 
     channel.onclose = () => cleanPeerDisconnection(destination);
@@ -83,7 +91,11 @@ export const createPeerConnectionFromNothing = (destination, usePeerAsSignalingR
             [OFFER]: offer,
             usePeerAsSignalingRelay
         }));
-        console.log(`Sent offer to ${destination}${usePeerAsSignalingRelay ? ', asked it to be my future signaling channel' : ''}`);
+        console.groupCollapsed(`Sent offer to %c${destination}`, `color: #${destination.substr(0, 6)}`);
+        console.log('Channel : ', signalingChannel);
+        console.log(`Source : %c${sourceId}`, `color: #${sourceId.substr(0, 6)}`);
+        console.log('Use peer as signaling relay : ', usePeerAsSignalingRelay);
+        console.groupEnd();
     }, console.error.bind(console));
 
     peerConnection.onicecandidate = ({candidate}) => {
@@ -100,11 +112,14 @@ const onNewIceCandidate = (destination, candidate, signalingChannel) => {
         destination,
         [ICE_CANDIDATE]: candidate
     }));
-    console.log(`Sent ICE Candidate to ${destination}`);
+    console.groupCollapsed(`Sent ICE Candidate to %c${destination}`, `color: #${destination.substr(0, 6)}`);
+    console.log('Channel : ', signalingChannel);
+    console.groupEnd();
 }
 
-const cleanPeerDisconnection = id => {
+export const cleanPeerDisconnection = id => {
     delete peerChannels[id];
     delete peerConnections[id];
     removePeer(id);
+    console.log(`Received a disconnection notification, farewell ${id}...`);
 }
