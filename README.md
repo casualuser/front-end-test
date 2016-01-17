@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm run i
+npm i
 ```
 
 ## Usage
