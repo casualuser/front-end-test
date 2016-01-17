@@ -7,7 +7,13 @@
 </head>
 <body>
     <h2>Web RTC chatting app</h2>
-    <p>Architecture from question 1</p>
+    <b>I am <span id='peerId'></span></b>
+    <p><i>Architecture from question 1</i></p>
+    <p>What are the problems of this architecture ?</p>
+    <ul>
+        <li>The signaling server needs to keep in memory every connected peers</li>
+        <li>For every new peer connection, all the signaling process passes through the signaling server, which can quickly be heavy for a massively used application</li>
+    </ul>
     <select id="peer-select">
         <option value="" disabled selected>Select a peer...</option>
     </select>

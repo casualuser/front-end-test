@@ -20,6 +20,8 @@ export const registerDomListeners = () => {
             alert('Please select a peer before sending a message.');
         }
     }
+    document.getElementById('peerId').innerHTML = sourceId;
+    document.getElementById('peerId').style.color = `#${sourceId.substr(0, 6)}`;
 }
 
 export const addChatMessage = (id, text) => {
@@ -32,7 +34,7 @@ export const addPeer = id => {
     const chatId = `chat-${id}`;
     const peerDiv = document.createElement('div');
     peerDiv.innerHTML = `
-<h3>${id}</h3>
+<h3 style='color: #${id.substr(0, 6)}'>${id}</h3>
 <ul id="${chatId}">
 </ul>
     `;
@@ -47,16 +49,18 @@ export const addPeer = id => {
 
 export const removePeer = id => {
     const peerDiv = document.getElementById(id);
-    peerDiv.parentNode.removeChild(peerDiv);
-    const select = document.getElementById('peer-select');
-    const {options} = select;
-    let targetOptionIndex;
-    for (let i = 0; i < options.length; i++) {
-        const candidate = options.item(i);
-        if (candidate.id === `option-${id}`) {
-            targetOptionIndex = i;
-            break;
+    if (peerDiv) {
+        peerDiv.parentNode.removeChild(peerDiv);
+        const select = document.getElementById('peer-select');
+        const {options} = select;
+        let targetOptionIndex;
+        for (let i = 0; i < options.length; i++) {
+            const candidate = options.item(i);
+            if (candidate.id === `option-${id}`) {
+                targetOptionIndex = i;
+                break;
+            }
         }
+        if (targetOptionIndex !== undefined) options.remove(targetOptionIndex);
     }
-    if (targetOptionIndex !== undefined) options.remove(targetOptionIndex);
 }

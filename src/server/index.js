@@ -23,6 +23,7 @@ webSocketServer.on('connection', webSocket => {
         for (let [peerId, socket] of connectedPeersWebSockets) {
             socket.send(JSON.stringify({
                 type: PEER_DISCONNECTION,
+                destination: peerId,
                 [PEER_DISCONNECTION]: webSocket.id
             }));
         }
