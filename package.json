@@ -12,7 +12,8 @@
     "start:example": "(node app/server/signalingServer.js &) && ./node_modules/http-server/bin/http-server -p 8089",
     "start:assignement": "(SERVER_PORT=9090 node lib/server/index.js &) && ./node_modules/http-server/bin/http-server -p 8089"
   },
-  "author": "Stanislas Bernard",
+  "author": "StyMaar",
+  "contributors": ["Stanislas Bernard"],
   "license": "GPL",
   "babel": {
     "presets": [
