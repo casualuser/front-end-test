@@ -12,9 +12,7 @@ npm i
 npm run start
 ```
 
-Then you can browse to [question 1](http://localhost:8089/question1) and [question 2](http://localhost:8089/question2)
-
-**Warning** please restart the signaling server when switching from question 1 to question 2, so that it cleans up its peers memory.
+Then you can browse to http://localhost:8089/ to see the app.
 
 ## Prerequisites:
 
