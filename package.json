@@ -9,7 +9,6 @@
     "test": "node_modules/mocha/bin/mocha",
     "styleCheck": "./node_modules/jshint/bin/jshint app/ && ./node_modules/echint/bin/echint -v && echo 'Style check OK'",
     "start": "npm run start:assignement",
-    "start:example": "(node app/server/signalingServer.js &) && ./node_modules/http-server/bin/http-server -p 8089",
     "start:assignement": "(SERVER_PORT=9090 node lib/server/index.js &) && ./node_modules/http-server/bin/http-server -p 8089"
   },
   "author": "StyMaar",
